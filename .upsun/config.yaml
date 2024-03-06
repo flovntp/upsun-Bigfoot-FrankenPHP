@@ -4,7 +4,7 @@ routes:
 
 services: 
     database:
-        type: postgresql:13
+        type: postgresql:15
 
     
 
@@ -13,7 +13,7 @@ applications:
         source:
             root: "/"
 
-        type: php:8.1
+        type: php:8.3
 
         dependencies:
             php:
@@ -62,14 +62,15 @@ applications:
             build: |
                 set -x -e
                 
-                export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
-                wget https://github.com/dunglas/frankenphp/releases/download/$VERSION/frankenphp-linux-x86_64
-                mv frankenphp-linux-x86_64 frankenphp
-                chmod +x frankenphp
 
                 curl -fs https://get.symfony.com/cloud/configurator | bash
                 
                 NODE_VERSION=18 symfony-build
+                
+                export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
+                wget https://github.com/dunglas/frankenphp/releases/download/$VERSION/frankenphp-linux-x86_64
+                mv frankenphp-linux-x86_64 frankenphp
+                chmod +x frankenphp
 
             deploy: |
                 set -x -e
