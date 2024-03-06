@@ -44,6 +44,12 @@ applications:
                     expires: 1h
                     passthru: "/index.php"
 
+            upstream:
+                socket_family: tcp # important for PHP we default to unix sockets
+                protocol: http
+            commands:
+                start: ./frankenphp php-server --listen=localhost:8888
+
         mounts:
             "/var": { source: storage, source_path: var }
             
@@ -54,6 +60,11 @@ applications:
         hooks:
             build: |
                 set -x -e
+                
+                export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
+                wget https://github.com/dunglas/frankenphp/releases/download/$VERSION/frankenphp-linux-x86_64
+                mv frankenphp-linux-x86_64 frankenphp
+                chmod +x frankenphp
 
                 curl -fs https://get.symfony.com/cloud/configurator | bash
                 
