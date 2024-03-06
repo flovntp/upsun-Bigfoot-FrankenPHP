@@ -52,7 +52,7 @@ applications:
                 socket_family: tcp # important for PHP we default to unix sockets
                 protocol: http
             commands:
-                start: ./frankenphp php-server --listen=localhost:80
+                start: ./frankenphp php-server --listen=localhost:8080
 
         mounts:
             "/var": { source: storage, source_path: var }
@@ -80,11 +80,11 @@ applications:
 
                 #                symfony-deploy
 
-        crons:
-            security-check:
-                # Check that no security issues have been found for PHP packages deployed in production
-                # See https://github.com/fabpot/local-php-security-checker
-                spec: '50 23 * * *'
-                cmd: if [ "$PLATFORM_ENVIRONMENT_TYPE" = "production" ]; then croncape php-security-checker; fi
+        #crons:
+        #    security-check:
+        #        # Check that no security issues have been found for PHP packages deployed in production
+        #        # See https://github.com/fabpot/local-php-security-checker
+        #        spec: '50 23 * * *'
+        #        cmd: if [ "$PLATFORM_ENVIRONMENT_TYPE" = "production" ]; then croncape php-security-checker; fi
 
         
