@@ -50,6 +50,7 @@ applications:
             commands:
                 start: ./frankenphp php-server --listen=localhost:8888
 
+
         mounts:
             "/var": { source: storage, source_path: var }
             
