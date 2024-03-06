@@ -48,7 +48,7 @@ applications:
                 socket_family: tcp # important for PHP we default to unix sockets
                 protocol: http
             commands:
-                start: ./frankenphp php-server --listen=localhost:8888
+                start: ./frankenphp php-server --listen=localhost:80
 
 
         mounts:
