@@ -40,10 +40,10 @@ applications:
         web:
             locations:
                 "/":
-                    root: "public"
-                    expires: 1h
-                    index:
-                        - index.php
+                    #root: "public"
+                    #expires: 1h
+                    #index:
+                    #    - index.php
                     passthru: true
                     scripts: false
                     allow: false
