@@ -53,7 +53,7 @@ applications:
 
         mounts:
             "/var": { source: storage, source_path: var }
-            
+            ".local": {source: storage, source_path: caddy-local}
 
         relationships:
             database: "database:postgresql"
