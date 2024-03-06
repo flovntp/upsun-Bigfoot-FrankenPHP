@@ -38,18 +38,17 @@ applications:
             flavor: none
 
         web:
-            locations:
-                "/":
-                    root: "public"
-                    expires: 1h
-                    passthru: "/index.php"
+            #            locations:
+            #                "/":
+            #                    root: "public"
+            #                    expires: 1h
+            #                    passthru: "/index.php"
 
             upstream:
                 socket_family: tcp # important for PHP we default to unix sockets
                 protocol: http
             commands:
                 start: ./frankenphp php-server --listen=localhost:80
-
 
         mounts:
             "/var": { source: storage, source_path: var }
