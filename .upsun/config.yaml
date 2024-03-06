@@ -52,7 +52,7 @@ applications:
                 socket_family: tcp # important for PHP we default to unix sockets
                 protocol: http
             commands:
-                start: ./frankenphp php-server --listen=localhost:8080
+                start: ./frankenphp php-server --listen=localhost:$PORT
 
         mounts:
             "/var": { source: storage, source_path: var }
