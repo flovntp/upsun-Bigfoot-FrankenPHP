@@ -42,7 +42,11 @@ applications:
                 "/":
                     root: "public"
                     expires: 1h
-                    passthru: "/index.php"
+                    index:
+                        - index.php
+                    passthru: true
+                    scripts: false
+                    allow: false
 
             upstream:
                 socket_family: tcp # important for PHP we default to unix sockets
