@@ -66,9 +66,9 @@ applications:
                 set -x -e
                 
 
-#                curl -fs https://get.symfony.com/cloud/configurator | bash
-#
-#                NODE_VERSION=18 symfony-build
+                #                curl -fs https://get.symfony.com/cloud/configurator | bash
+                #
+                #                NODE_VERSION=18 symfony-build
                 
                 export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
                 wget https://github.com/dunglas/frankenphp/releases/download/$VERSION/frankenphp-linux-x86_64
@@ -78,7 +78,7 @@ applications:
             deploy: |
                 set -x -e
 
-#                symfony-deploy
+                #                symfony-deploy
 
         crons:
             security-check:
