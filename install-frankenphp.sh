@@ -13,13 +13,15 @@ run() {
     FRANKENPHP_BINARY="${FRANKENPHP_PROJECT}_v$FRANKENPHP_VERSION"
     FRANKENPHP_BINARY="${FRANKENPHP_BINARY//\./_}"
 
+    rm -Rf ${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}
+
     if [ ! -f "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}" ]; then
-        ensure_source "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION"
-        download_binary "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION"
-        move_binary "$FRANKENPHP_PROJECT" "$FRANKENPHP_BINARY"
+        ensure_source "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION";
+        download_binary "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION";
+        move_binary "$FRANKENPHP_PROJECT" "$FRANKENPHP_BINARY";
     fi
 
-    copy_lib "$FRANKENPHP_PROJECT" "$FRANKENPHP_BINARY"
+    copy_lib "$FRANKENPHP_PROJECT" "$FRANKENPHP_BINARY";
     echo "FrankenPHP installation successful"
 }
 
@@ -31,9 +33,9 @@ copy_lib() {
     FRANKENPHP_PROJECT=$1;
     FRANKENPHP_BINARY=$2;
 
-    cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}" "${PLATFORM_APP_DIR}/${FRANKENPHP_PROJECT}"
-    cd ${PLATFORM_APP_DIR}
-    chmod +x ${FRANKENPHP_PROJECT}
+    cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}" "${PLATFORM_APP_DIR}/${FRANKENPHP_PROJECT}";
+    cd ${PLATFORM_APP_DIR};
+    chmod +x ${FRANKENPHP_PROJECT};
     echo "Success"
 }
 
@@ -45,7 +47,7 @@ ensure_source() {
     FRANKENPHP_PROJECT=$1;
     FRANKENPHP_VERSION=$2;
 
-    mkdir -p "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/$FRANKENPHP_VERSION"
+    mkdir -p "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/$FRANKENPHP_VERSION";
     cd "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/$FRANKENPHP_VERSION" || exit 1;
     echo "Success"
 }
@@ -67,19 +69,19 @@ move_binary() {
     echo "---------------------------------------"
     FRANKENPHP_PROJECT=$1;
     FRANKENPHP_BINARY=$2;
-    cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_PROJECT}/${FRANKENPHP_VERSION}/${FRANKENPHP_PROJECT}" "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}"
-    chmod +x "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}"
+    cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_PROJECT}/${FRANKENPHP_VERSION}/${FRANKENPHP_PROJECT}" "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}";
+    chmod +x "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}";
     echo "Success"
 }
 
 ensure_environment() {
     # If not running in an Upsun/Platform.sh build environment, do nothing.
     if [ -z "${PLATFORM_CACHE_DIR}" ]; then
-        echo "Not running in an Upsun/Platform.sh build environment. Aborting FrankenPHP installation."
+        echo "Not running in an Upsun/Platform.sh build environment. Aborting FrankenPHP installation.";
         exit 0;
     fi
 }
 
 ensure_environment
-VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
+VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name');
 run "frankenphp" "$VERSION"
