@@ -65,7 +65,7 @@ applications:
             build: |
                 set -x -e
                 
-                curl -fs https://get.symfony.com/cloud/configurator | bash
+                CLOUD_NAME=upsun curl -fs https://get.symfony.com/cloud/configurator | bash
 
                 NODE_VERSION=18 symfony-build
                 
