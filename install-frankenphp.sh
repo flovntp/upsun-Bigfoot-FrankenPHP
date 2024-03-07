@@ -71,9 +71,9 @@ move_binary() {
 }
 
 ensure_environment() {
-    # If not running in an Upsun build environment, do nothing.
+    # If not running in an Upsun/Platform.sh build environment, do nothing.
     if [ -z "${PLATFORM_CACHE_DIR}" ]; then
-        echo "Not running in an Upsun build environment. Aborting FrankenPHP installation."
+        echo "Not running in an Upsun/Platform.sh build environment. Aborting FrankenPHP installation."
         exit 0;
     fi
 }
