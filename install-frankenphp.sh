@@ -32,6 +32,8 @@ copy_lib() {
     FRANKENPHP_BINARY=$2;
 
     cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}" "${PLATFORM_APP_DIR}/${FRANKENPHP_PROJECT}"
+    cd ${PLATFORM_APP_DIR}
+    chmod +x ${FRANKENPHP_PROJECT}
     echo "Success"
 }
 
