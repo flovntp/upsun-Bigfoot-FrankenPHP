@@ -50,7 +50,9 @@ applications:
             #".local": {source: storage, source_path: caddy-local}
 
         relationships:
-            database: "database:postgresql"
+            database:
+                service: database
+                endpoint: postgresql
             
         hooks:
             build: |
