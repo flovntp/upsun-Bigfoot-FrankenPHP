@@ -40,7 +40,7 @@ applications:
         web:
             locations:
                 "/":
-                    root: "public"
+                    #root: "public"
                     #expires: 1h
                     #index:
                     #    - index.php
