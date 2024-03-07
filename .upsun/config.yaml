@@ -22,6 +22,7 @@ applications:
 
             - "nodejs@18"
             - frankenphp
+            - bzip2
 
 
         variables:
