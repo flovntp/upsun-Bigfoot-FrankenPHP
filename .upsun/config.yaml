@@ -13,29 +13,19 @@ applications:
         source:
             root: "/"
 
-        type: php:8.1
-
-        dependencies:
-            php:
-                composer/composer: "^2"
-
-        runtime:
-            extensions:
-                - apcu
-                - blackfire
-                - ctype
-                - iconv
-                - mbstring
-                - pdo_pgsql
-                - sodium
-                - xsl
-                
+        stack:
+            - "php@8.3":
+              extensions:
+                  - apcu
+                  - blackfire
+                  - sodium
+                  - xsl
+            - "nodejs@18"
+            - bzip2
 
         variables:
             php:
                 opcache.preload: config/preload.php
-        build:
-            flavor: none
 
         web:
             locations:
