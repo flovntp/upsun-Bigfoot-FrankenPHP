@@ -59,6 +59,7 @@ applications:
             build: |
                 set -x -e
 
+                php -v
                 curl -fs https://get.symfony.com/cloud/configurator | bash
 
                 node --version
