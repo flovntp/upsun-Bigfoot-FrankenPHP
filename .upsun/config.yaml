@@ -20,7 +20,7 @@ applications:
                   - pdo_pgsql
                   - xsl
 
-            - "nodejs@18"
+            - "nodejs@20"
             - frankenphp
             - bzip2
 
@@ -61,7 +61,8 @@ applications:
 
                 curl -fs https://get.symfony.com/cloud/configurator | bash
 
-                NODE_VERSION=18 symfony-build
+                node --version
+                NODE_VERSION=20 symfony-build
 
             deploy: |
                 set -x -e
