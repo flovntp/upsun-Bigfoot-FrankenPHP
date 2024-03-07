@@ -59,10 +59,12 @@ applications:
             build: |
                 set -x -e
 
-                echo $PLATFORM_BRANCH
-                curl -fs https://get.symfony.com/cloud/configurator | bash
-
-                node --version
+                export PLATFORM_BRANCH="toto"
+                which php -a
+                php -v
+                php -m
+                
+                curl -fs https://get.symfony.com/cloud/test/configurator | bash
                 NODE_VERSION=20 symfony-build
 
             deploy: |
