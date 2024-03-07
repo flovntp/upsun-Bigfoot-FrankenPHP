@@ -7,7 +7,8 @@ run() {
     # Run the compilation process.
     cd $PLATFORM_CACHE_DIR || exit 1;
 
-    FRANKENPHP_VERSION=$1;
+    FRANKENPHP_PROJECT=$1;
+    FRANKENPHP_VERSION=$2;
 
     FRANKENPHP_BINARY="${FRANKENPHP_PROJECT}_v$FRANKENPHP_VERSION"
     FRANKENPHP_BINARY="${FRANKENPHP_BINARY//\./_}"
@@ -91,8 +92,6 @@ ensure_arguments() {
 ensure_environment
 ensure_arguments "$1"
 
-#FRANKENPHP_PROJECT=$1;
-FRANKENPHP_PROJECT=frankenphp
 FRANKENPHP_VERSION=$(sed "s/^[=v]*//i" <<< "$1" | tr '[:upper:]' '[:lower:]')
 
-run "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION"
+run "frankenphp" "$FRANKENPHP_VERSION"
