@@ -59,7 +59,7 @@ download_binary() {
     ls -la
 
     mv frankenphp-linux-x86_64 ${FRANKENPHP_PROJECT}
-    chmod +x ${FRANKENPHP_PROJECT}
+
 }
 
 move_binary() {
@@ -92,6 +92,4 @@ ensure_arguments() {
 ensure_environment
 ensure_arguments "$1"
 
-#FRANKENPHP_VERSION=$(sed "s/^[=v]*//i" <<< "$1" | tr '[:upper:]' '[:lower:]')
-
-run "frankenphp" "$FRANKENPHP_VERSION"
+run "frankenphp" "$1"
