@@ -72,10 +72,7 @@ applications:
 
                 NODE_VERSION=18 symfony-build
                 
-                export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
-                echo "version = "
-                echo $VERSION
-                bash ./install-frankenphp.sh $VERSION
+                bash ./install-frankenphp.sh
 
             deploy: |
                 set -x -e

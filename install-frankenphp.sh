@@ -20,6 +20,7 @@ run() {
     fi
 
     copy_lib "$FRANKENPHP_PROJECT" "$FRANKENPHP_BINARY"
+    echo "FrankenPHP installation successful"
 }
 
 copy_lib() {
@@ -31,6 +32,7 @@ copy_lib() {
     FRANKENPHP_BINARY=$2;
 
     cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}" "${PLATFORM_APP_DIR}/${FRANKENPHP_PROJECT}"
+    echo "Success"
 }
 
 ensure_source() {
@@ -43,54 +45,38 @@ ensure_source() {
 
     mkdir -p "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/$FRANKENPHP_VERSION"
     cd "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/$FRANKENPHP_VERSION" || exit 1;
+    echo "Success"
 }
 
 download_binary() {
     echo "---------------------------------------------------------------------"
     echo " Downloading FRANKENPHP_PROJECT binary source code "
     echo "---------------------------------------------------------------------"
-
     FRANKENPHP_PROJECT=$1;
     FRANKENPHP_VERSION=$2;
-
-    pwd
     wget https://github.com/dunglas/frankenphp/releases/download/$FRANKENPHP_VERSION/frankenphp-linux-x86_64
-
-    ls -la
-
     mv frankenphp-linux-x86_64 ${FRANKENPHP_PROJECT}
-
+    echo "Success"
 }
 
 move_binary() {
     echo "---------------------------------------"
     echo " Moving and caching ${FRANKENPHP_PROJECT} binary "
     echo "---------------------------------------"
-
     FRANKENPHP_PROJECT=$1;
     FRANKENPHP_BINARY=$2;
-
     cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_PROJECT}/${FRANKENPHP_VERSION}/${FRANKENPHP_PROJECT}" "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}"
+    echo "Success"
 }
 
 ensure_environment() {
     # If not running in an Upsun build environment, do nothing.
     if [ -z "${PLATFORM_CACHE_DIR}" ]; then
-        echo "Not running in an Upsun build environment.  Aborting FrankenPHP installation."
+        echo "Not running in an Upsun build environment. Aborting FrankenPHP installation."
         exit 0;
     fi
 }
 
-ensure_arguments() {
-    # If no version was specified, don't try to guess.
-    if [ -z $1 ]; then
-        echo "No version of the FrankenPHP is specified. You must specify a tagged version on the command line."
-        exit 1;
-    fi
-}
-
 ensure_environment
-ensure_arguments "$1"
-
-
-run "frankenphp" "$1"
+VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
+run "frankenphp" "$VERSION"
