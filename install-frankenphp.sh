@@ -92,6 +92,6 @@ ensure_arguments() {
 ensure_environment
 ensure_arguments "$1"
 
-FRANKENPHP_VERSION=$(sed "s/^[=v]*//i" <<< "$1" | tr '[:upper:]' '[:lower:]')
+#FRANKENPHP_VERSION=$(sed "s/^[=v]*//i" <<< "$1" | tr '[:upper:]' '[:lower:]')
 
 run "frankenphp" "$FRANKENPHP_VERSION"
