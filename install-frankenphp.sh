@@ -7,15 +7,14 @@ run() {
     # Run the compilation process.
     cd $PLATFORM_CACHE_DIR || exit 1;
 
-    FRANKENPHP_PROJECT=$1;
-    FRANKENPHP_VERSION=$2;
+    FRANKENPHP_VERSION=$1;
 
-    FRANKENPHP_BINARY="${FRANKENPHP_PROJECT}_v$2"
+    FRANKENPHP_BINARY="${FRANKENPHP_PROJECT}_v$FRANKENPHP_VERSION"
     FRANKENPHP_BINARY="${FRANKENPHP_BINARY//\./_}"
 
     if [ ! -f "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}" ]; then
         ensure_source "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION"
-        #compile_source "$FRANKENPHP_PROJECT"
+        download_binary "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION"
         move_binary "$FRANKENPHP_PROJECT" "$FRANKENPHP_BINARY"
     fi
 
@@ -33,110 +32,63 @@ copy_lib() {
     cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}" "${PLATFORM_APP_DIR}/${FRANKENPHP_PROJECT}"
 }
 
-enable_lib() {
-    echo "-------------------------------"
-    echo " Enabling extension in php.ini "
-    echo "-------------------------------"
-
-    FRANKENPHP_PROJECT=$1;
-
-    echo "extension=${PLATFORM_APP_DIR}/${FRANKENPHP_PROJECT}" >> $PLATFORM_APP_DIR/php.ini
-}
-
-move_extension() {
-    echo "---------------------------------------"
-    echo " Moving and caching compiled extension "
-    echo "---------------------------------------"
-
-    FRANKENPHP_PROJECT=$1;
-    FRANKENPHP_BINARY=$2;
-
-    mv "${PLATFORM_CACHE_DIR}/${FRANKENPHP_PROJECT}/frankenphp-src/${FRANKENPHP_PROJECT}" "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}"
-}
-
 ensure_source() {
     echo "---------------------------------------------------------------------"
-    echo " Ensuring that the extension source code is available and up to date "
+    echo " Ensuring that the $FRANKENPHP_PROJECT binary folder is available and up to date "
     echo "---------------------------------------------------------------------"
 
     FRANKENPHP_PROJECT=$1;
     FRANKENPHP_VERSION=$2;
 
-    mkdir -p "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT"
-    cd "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT" || exit 1;
-
-    if [ -d "frankenphp-src" ]; then
-        cd frankenphp-src || exit 1;
-    else
-        wget https://github.com/dunglas/frankenphp/releases/download/$FRANKENPHP_VERSION/frankenphp-linux-x86_64
-        mv frankenphp-linux-x86_64 frankenphp
-        chmod +x frankenphp
-    fi
+    mkdir -p "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/$FRANKENPHP_VERSION"
+    cd "$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/$FRANKENPHP_VERSION" || exit 1;
 }
 
-compile_source() {
+download_binary() {
+    echo "---------------------------------------------------------------------"
+    echo " Downloading FRANKENPHP_PROJECT binary source code "
+    echo "---------------------------------------------------------------------"
 
     FRANKENPHP_PROJECT=$1;
+    FRANKENPHP_VERSION=$2;
 
-    echo "--------------------"
-    echo " Compiling valgrind "
-    echo "--------------------"
+    wget https://github.com/dunglas/frankenphp/releases/download/$FRANKENPHP_VERSION/frankenphp-linux-x86_64
+    mv frankenphp-linux-x86_64 ${FRANKENPHP_PROJECT}
+    chmod +x ${FRANKENPHP_PROJECT}
+}
 
-    ./autogen.sh
-    ./configure --prefix="$PLATFORM_CACHE_DIR/$FRANKENPHP_PROJECT/swoole-src"
-    make
-    make install
+move_binary() {
+    echo "---------------------------------------"
+    echo " Moving and caching ${FRANKENPHP_PROJECT} binary "
+    echo "---------------------------------------"
 
-    echo "---------------------"
-    echo " Compiling extension "
-    echo "---------------------"
+    FRANKENPHP_PROJECT=$1;
+    FRANKENPHP_BINARY=$2;
 
-    cd ..
-    phpize
-    ./configure --enable-openssl \
-                --enable-mysqlnd \
-                --enable-sockets \
-                --enable-http2 \
-                --with-postgres
-    make
-
-
-
-
+    cp "${PLATFORM_CACHE_DIR}/${FRANKENPHP_PROJECT}/${FRANKENPHP_VERSION}/${FRANKENPHP_PROJECT}" "${PLATFORM_CACHE_DIR}/${FRANKENPHP_BINARY}"
 }
 
 ensure_environment() {
-    # If not running in a Platform.sh build environment, do nothing.
+    # If not running in an Upsun build environment, do nothing.
     if [ -z "${PLATFORM_CACHE_DIR}" ]; then
-        echo "Not running in a Platform.sh build environment.  Aborting Open Swoole installation."
+        echo "Not running in an Upsun build environment.  Aborting FrankenPHP installation."
         exit 0;
     fi
 }
 
 ensure_arguments() {
-    # If no Swoole repository was specified, don't try to guess.
-    if [ -z $1 ]; then
-        echo "No version of the Swoole project specified. (swoole/openswoole)."
-        exit 1;
-    fi
-
-    if [[ ! "$1" =~ ^(swoole|openswoole)$ ]]; then
-        echo "The requested Swoole project is not supported: ${1} Aborting.\n"
-        exit 1;
-    fi
-
     # If no version was specified, don't try to guess.
-    if [ -z $2 ]; then
-        echo "No version of the ${1} extension specified.  You must specify a tagged version on the command line."
+    if [ -z $1 ]; then
+        echo "No version of the FrankenPHP is specified. You must specify a tagged version on the command line."
         exit 1;
     fi
 }
 
-
 ensure_environment
-ensure_arguments "$1" "$2"
+ensure_arguments "$1"
 
-FRANKENPHP_PROJECT=$1;
-FRANKENPHP_VERSION=$(sed "s/^[=v]*//i" <<< "$2" | tr '[:upper:]' '[:lower:]')
+#FRANKENPHP_PROJECT=$1;
+FRANKENPHP_PROJECT=frankenphp
+FRANKENPHP_VERSION=$(sed "s/^[=v]*//i" <<< "$1" | tr '[:upper:]' '[:lower:]')
 
 run "$FRANKENPHP_PROJECT" "$FRANKENPHP_VERSION"
