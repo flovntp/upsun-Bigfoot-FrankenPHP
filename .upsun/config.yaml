@@ -51,8 +51,8 @@ applications:
             upstream:
                 socket_family: tcp # important for PHP we default to unix sockets
                 protocol: http
-            commands:
-                start: ./frankenphp php-server --listen=localhost:$PORT --root=$PLATFORM_DOCUMENT_ROOT
+            #commands:
+            #    start: ./frankenphp php-server --listen=localhost:$PORT --root=$PLATFORM_DOCUMENT_ROOT
 
         mounts:
             "/var": { source: storage, source_path: var }
@@ -65,15 +65,13 @@ applications:
             build: |
                 set -x -e
                 
-
                 curl -fs https://get.symfony.com/cloud/configurator | bash
 
+                echo $PLATFORM_BRANCH
                 NODE_VERSION=18 symfony-build
                 
-                export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
-                wget https://github.com/dunglas/frankenphp/releases/download/$VERSION/frankenphp-linux-x86_64
-                mv frankenphp-linux-x86_64 frankenphp
-                chmod +x frankenphp
+                #export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
+                #bash ./install-frankenphp.sh frankenphp $VERSION
 
             deploy: |
                 set -x -e
