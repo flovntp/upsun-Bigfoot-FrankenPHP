@@ -13,29 +13,20 @@ applications:
         source:
             root: "/"
 
-        type: php:8.3
+        stack:
+            - "php@8.3":
+              extensions:
+                  - apcu
+                  - pdo_pgsql
+                  - xsl
 
-        dependencies:
-            php:
-                composer/composer: "^2"
+            - "nodejs@18"
+            - frankenphp
 
-        runtime:
-            extensions:
-                - apcu
-                - blackfire
-                - ctype
-                - iconv
-                - mbstring
-                - pdo_pgsql
-                - sodium
-                - xsl
-                
 
         variables:
             php:
                 opcache.preload: config/preload.php
-        build:
-            flavor: none
 
         web:
             locations:
@@ -64,16 +55,10 @@ applications:
         hooks:
             build: |
                 set -x -e
-                
 
                 curl -fs https://get.symfony.com/cloud/configurator | bash
 
                 NODE_VERSION=18 symfony-build
-                
-                export VERSION=$(curl --silent "https://api.github.com/repos/dunglas/frankenphp/tags" | jq -r '.[0].name')
-                wget https://github.com/dunglas/frankenphp/releases/download/$VERSION/frankenphp-linux-x86_64
-                mv frankenphp-linux-x86_64 frankenphp
-                chmod +x frankenphp
 
             deploy: |
                 set -x -e
