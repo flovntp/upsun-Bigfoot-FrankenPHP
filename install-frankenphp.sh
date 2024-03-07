@@ -92,4 +92,5 @@ ensure_arguments() {
 ensure_environment
 ensure_arguments "$1"
 
+
 run "frankenphp" "$1"
