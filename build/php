@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+ENVIRONMENT=${PLATFORM_ENVIRONMENT:-}
+
+# Check if we are in a build hook or not
+if  [[ -z "${ENVIRONMENT:-}" ]] && [[ -n "${PLATFORM_APP_DIR:-}" ]]; then
+  export PHP_INI_SCAN_DIR="${PLATFORM_APP_DIR}"
+fi
+
+exec "$(which -a php | sed -n '2 p')" "$@"

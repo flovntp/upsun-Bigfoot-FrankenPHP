@@ -1,0 +1,55 @@
+#!/bin/bash
+set -xeuo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+if [ "${NO_ASSET_MAPPER:-}" = "" ] && [ -f importmap.php ]; then
+    if symfony console importmap:install --help >/dev/null 2>/dev/null; then
+        symfony console importmap:install
+    fi
+    if composer show symfonycasts/tailwind-bundle >/dev/null 2>/dev/null; then
+        symfony console tailwind:build --minify
+    fi
+    if composer show symfonycasts/sass-bundle >/dev/null 2>/dev/null; then
+        symfony console sass:build
+    fi
+    symfony console asset-map:compile
+fi
+
+if [ "${NO_YARN:-}" = "" ] && [ -f yarn.lock ]; then
+    node-install
+
+    set +x
+    # Setup everything to use the Node installation
+    unset NPM_CONFIG_PREFIX
+    export NVM_DIR=${NVM_DIR:-${PLATFORM_APP_DIR}/.nvm}
+    # shellcheck source=/dev/null
+    . "${NVM_DIR}/nvm.sh" use "${NODE_VERSION:=16}"
+    set -x
+
+    # shellcheck disable=SC2086
+    yarn install ${YARN_FLAGS:-}
+
+    if [ -d node_modules/@symfony/webpack-encore ]; then
+        yarn encore production
+    fi
+fi
+
+if [ "${NO_NPM:-}" = "" ] && [ -f package-lock.json ]; then
+    node-install
+
+    set +x
+    # Setup everything to use the Node installation
+    unset NPM_CONFIG_PREFIX
+    export NVM_DIR=${NVM_DIR:-${PLATFORM_APP_DIR}/.nvm}
+    # shellcheck source=/dev/null
+    . "${NVM_DIR}/nvm.sh" use "${NODE_VERSION:=16}"
+    set -x
+
+    npm install
+
+    if [ -d node_modules/@symfony/webpack-encore ]; then
+        npx encore production
+    fi
+fi

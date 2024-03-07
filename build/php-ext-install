@@ -1,0 +1,168 @@
+#!/bin/bash
+set -euo pipefail
+shopt -sq extglob
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+run() {
+    CACHE_DIR=${SYMFONY_CACHE_DIR:-${PLATFORM_CACHE_DIR:-}}
+    cd "${CACHE_DIR}" || exit 1;
+
+    local extname="${1}" url="${2}" version="${2}" slug="${1}-${2}"
+
+    if [[ "${url}" == +(http|https)://* ]] || [[ "${url}" == *@*:* ]]; then
+        slug=$(basename -- "${url}")
+        slug="${slug%.*}"
+        if [[ "${url}" == *.git ]] || [[ "${url}" == *@*:* ]]; then
+            version="${3:-master}"
+            slug="${slug}-git-${version}"
+        else
+            slug="${extname}-${slug}"
+        fi
+    else
+        url="https://pecl.php.net/get/${slug}.tgz"
+    fi
+
+    if [[ "${url}" == *.git ]] || [[ "${url}" == *@*:* ]]; then
+        ensure_source "${url}" "ext-${slug}"
+        checkout_version "${version}"
+        compile_source
+    else
+        download_source "${url}" "ext-${slug}"
+
+        if ! extension_already_compiled "ext-${slug}" "${extname}"; then
+            compile_source
+        fi
+    fi
+
+    copy_lib "${extname}"
+    enable_lib "${extname}"
+}
+
+extension_already_compiled() {
+    CACHE_DIR=${SYMFONY_CACHE_DIR:-${PLATFORM_CACHE_DIR:-}}
+
+    if [[ ! -d "${CACHE_DIR}/${1}" ]]; then
+       return 1
+    fi
+
+    # we use a for loop on purpose as we have to stay within the same process
+    # to control working directory and return value
+    # shellcheck disable=SC2044
+    for file in $(find "${CACHE_DIR}/${1}" -type f -name "${2}.so"); do
+        if [[ "${file}" != */modules/* ]]; then
+            continue
+        fi
+
+        echo "> Reusing previously built extension."
+        cd "$(dirname "${file}")/.."
+        return 0
+    done
+
+    return 1
+}
+
+ensure_source() {
+    # Ensure that the extension source code is available and up to date.
+    if [[ -d "${2}" ]]; then
+        cd "${2}" || exit 1;
+        echo "> Reusing previous source code checkout."
+        git fetch --all --prune
+    else
+        echo "> Cloning extension source code from ${1}."
+        git clone "${1}" "${2}"
+        cd "${2}" || exit 1;
+    fi
+}
+
+checkout_version () {
+    # Check out the specific Git tag that we want to build.
+    git checkout "$1"
+}
+
+download_source() {
+    # Directory exists and is not empty
+    if [[ ! -d "${2}" ]]; then
+        mkdir -p "${2}"
+    fi
+    if [[ ! "$(ls -A "${2}")" ]]; then
+        echo "> Downloading extension source code from ${1}."
+        curl -fsSL "${1}" | tar -C "${2}" -xf -
+    else
+        echo "> Reusing previously downloaded extension source code."
+    fi
+
+    cd "${2}" || exit 1;
+}
+
+compile_source() {
+    if [[ ! -f "config.m4" ]]; then
+        cd "$(find . -type f -name config.m4 -exec dirname {} \;)" || exit 1
+    fi
+
+    echo "> Compiling extension."
+
+    # Compile the extension.
+    phpize
+    ./configure
+    make
+}
+
+copy_lib() {
+    APP_DIR=$PLATFORM_APP_DIR
+
+    # Copy the compiled library to the application directory.
+    echo "> Installing ${1} extension."
+    mkdir -p "${APP_DIR}/.global/extensions"
+
+    cp "modules/${1}.so" "${APP_DIR}/.global/extensions"
+}
+
+enable_lib() {
+    APP_DIR=$PLATFORM_APP_DIR
+
+    # Tell PHP to enable the extension.
+    echo "> Enabling ${1} extension."
+    printf "\nextension=${APP_DIR}/.global/extensions/%s.so\n" "${1}" >> "${APP_DIR}/php.ini"
+}
+
+ensure_environment() {
+    CACHE_DIR=${SYMFONY_CACHE_DIR:-${PLATFORM_CACHE_DIR:-}}
+    APP_DIR=$PLATFORM_APP_DIR
+
+    # If not running in a build environment, do nothing.
+    if [[ "${CACHE_DIR}" == "" ]] || [[ "${APP_DIR}" == "" ]]; then
+        echo "This wrapper is only meant to be used in a build environment. Aborting installation."
+        exit 0;
+    fi
+}
+
+ensure_arguments() {
+    if [[ ${#} -lt 2 ]] || [[ ${#} -gt 3 ]]; then
+        echo "Wrong usage. Valid usages:"
+        echo " - ${0} extension version"
+        echo " - ${0} extension url"
+        echo " - ${0} extension repo [reference]"
+        echo ""
+        echo "Aborting installation."
+        exit 1;
+    fi
+    # This look like a Git URL
+    if [[ "${2}" == *.git ]] || [[ "${2}" == *@*:* ]]; then
+        return
+    # If this is an URL, we don't want a version argument
+    elif [[ "${2}" == +(http|https)://* ]]; then
+        if [[ ${#} -ne 2 ]]; then
+          echo "Specifying a version is not compatible with URL download."
+          exit 1;
+        fi
+    elif [[ ${#} -ne 2 ]]; then
+        echo "No version specified. You must specify a released version number."
+        exit 1;
+    fi
+}
+
+ensure_environment
+ensure_arguments "$@"
+run "$@"

@@ -1,0 +1,20 @@
+#!/bin/bash
+set -xeuo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+# deploy is only ran for web instances, not for workers
+
+symfony-start
+
+# Kill FPM to be sure it's clean from any remaining bits from
+# Symfony's cache (preload, cache, etc,)
+pkill -USR2 -f php-fpm 2> /dev/null || true
+
+symfony-database-migrate
+
+# copy demo database on a demo project
+if [ -f templates/debug/source_code.html.twig ]; then
+    curl -fsSL https://raw.githubusercontent.com/symfony/demo/main/data/database.sqlite -o data/database.sqlite
+fi

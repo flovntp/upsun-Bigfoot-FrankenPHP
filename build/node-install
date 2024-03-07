@@ -1,0 +1,50 @@
+#!/bin/bash
+set -euo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+# Licensed to Platform.sh for projects that contributes back to Symfony SAS
+
+CACHE_DIR=${SYMFONY_CACHE_DIR:-${PLATFORM_CACHE_DIR:-}}
+
+: "${NVM_VERSION:=v0.39.3}"
+: "${NVM_DIR:=${NVM_DIR:-${PLATFORM_APP_DIR}}/.nvm}"
+export NVM_DIR
+
+if [ ! -d "${NVM_DIR}" ]; then
+	mkdir -p "${NVM_DIR}"
+	if [ -n "${CACHE_DIR}" ]; then
+		mkdir -p "${CACHE_DIR}/../nvm/cache"
+		# Reuse Node versions downloaded by NVM between builds.
+		ln -nsf "${CACHE_DIR}/../nvm/cache" "${NVM_DIR}/.cache"
+		# Avoid cloning NVM on each build, only fetch the updates.
+		# The target is not created on purpose because it makes the initial NVM
+		# install fails.
+		ln -nsf "${CACHE_DIR}/../nvm/git" "${NVM_DIR}/.git"
+		cd "${CACHE_DIR}/../nvm"
+	else
+		cd "/tmp"
+	fi
+	wget -q -N "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh"
+	# NODE_VERSION disables automatic node installation and PROFILE disables
+	# profile update.
+	NODE_VERSION="" PROFILE="/dev/null" bash install.sh
+	cd - >/dev/null
+fi
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+	unset NPM_CONFIG_PREFIX
+	: "${NODE_VERSION:=16}"
+
+	# shellcheck source=/dev/null
+	. "${NVM_DIR}/nvm.sh" --no-use
+	nvm install --no-progress "${NODE_VERSION}"
+
+	if [ -f yarn.lock ]; then
+		v=$(echo -e "16\n${NODE_VERSION}")
+		if [ "$v" == "$(sort --version-sort <<< "$v")" ]; then
+			npm install --location=global yarn
+		else
+			npm install --global yarn
+		fi
+	fi
+fi

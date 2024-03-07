@@ -1,0 +1,10 @@
+#!/bin/bash
+set -xeuo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+# Doctrine migrations
+if composer show doctrine/doctrine-migrations-bundle >/dev/null 2>/dev/null; then
+    symfony console doctrine:migrations:migrate -n --allow-no-migration
+fi

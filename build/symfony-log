@@ -1,0 +1,8 @@
+#!/bin/bash
+set -xeuo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+CLOUD_NAME=$(jq .configuration.project_info.settings.product_code /run/config.json)
+(wget --timeout 10 -q --post-data "{\"cloud\": ${CLOUD_NAME}, \"command\": \"container-deploy\", \"project\": \"${PLATFORM_PROJECT}\", \"env\": \"${PLATFORM_BRANCH:-}\"}" --header="Content-Type:application/json" https://symfony.com/platformsh/activity) || true

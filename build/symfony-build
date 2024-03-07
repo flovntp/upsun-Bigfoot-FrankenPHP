@@ -1,0 +1,37 @@
+#!/bin/bash
+set -xeuo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+# remove the development front-controller if present
+rm -f web/index_dev.php web/app_dev.php public/index_dev.php public/app_dev.php
+
+# install PHP extensions
+exts=$(echo "$PLATFORM_VARIABLES" | base64 -d | jq -r 'with_entries(select(.key | startswith("php-ext:"))) | to_entries[] | [.key, .value] | join(":")')
+for ext in $exts; do
+    name=$(echo "$ext" | cut -d':' -f 2)
+    version=$(echo "$ext" | cut -d':' -f 3)
+    php-ext-install "$name" "$version"
+done
+
+# we always install dev deps (for dev env we need them and we can't know where our image will be deployed)
+# shellcheck disable=SC2086
+symfony composer install --prefer-dist ${COMPOSER_FLAGS:-} --no-scripts --no-progress --no-ansi --no-interaction
+# we force a prod deployment (Flex only)
+if composer show symfony/flex >/dev/null 2>/dev/null; then
+    symfony composer dump-env "${APP_ENV:-prod}" || true
+    # shellcheck disable=SC2086
+    symfony composer install --prefer-dist --optimize-autoloader --apcu-autoloader --classmap-authoritative ${COMPOSER_FLAGS:-} --no-progress --no-ansi --no-interaction
+    # move cache if generated (not the case when symfony/console is not installed -- display a warning in such a case)
+    if [[ -d "${SYMFONY_APP_CACHE_DIR:-var/cache}/${APP_ENV:-prod}" ]]; then
+        mkdir -p tmp/cache && mv "${SYMFONY_APP_CACHE_DIR:-var/cache}/${APP_ENV:-prod}" tmp/cache/
+    else
+        echo -e "Cache was not generated as symfony/console is not installed, you should require it!"
+    fi
+else
+    # shellcheck disable=SC2086
+    symfony composer install --prefer-dist --optimize-autoloader --apcu-autoloader --classmap-authoritative ${COMPOSER_FLAGS:-} --no-progress --no-ansi --no-interaction
+fi
+
+assets-build

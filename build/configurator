@@ -1,0 +1,30 @@
+#!/bin/bash
+set -xeuo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+# Download the tools
+CACHE_DIR=${SYMFONY_CACHE_DIR:-${PLATFORM_CACHE_DIR:-/tmp/$USER/cache}}
+mkdir -p "$PLATFORM_APP_DIR/.global/bin/" "$CACHE_DIR" "$PLATFORM_APP_DIR/.global/lib/"
+#(cd "${CACHE_DIR}" && wget -nv -N "https://get.symfony.com/cloud/${SC_CHANNEL:-test}/tools.tar.bz2")
+#tar -C "$PLATFORM_APP_DIR/.global/bin/" -jxpf "$CACHE_DIR/tools.tar.bz2"
+cp ${PLATFORM_APP_DIR}/build/* ${PLATFORM_APP_DIR}/.global/bin/
+
+#symfony-log
+
+if ! command -v upsun >/dev/null ; then
+    #(curl -fsS https://platform.sh/cli/installer | php -n -d"$(php -n -r 'extension_loaded("json")||print("extension");')"=json.so -d extension=phar.so -d extension=mbstring.so -d extension=posix.so -d extension=curl.so) || true
+    curl -fsSL https://raw.githubusercontent.com/platformsh/cli/main/installer.sh | VENDOR=upsun INSTALL_DIR=$PLATFORM_APP_DIR/.global/bin/ INSTALL_METHOD=raw bash
+fi
+
+cat >> "$PLATFORM_APP_DIR/.global/environment" <<EOS
+export PLATFORMSH_CLI_APPLICATION_TMP_SUB_DIR=platformsh-cli-\${USER:-tmp}
+export PATH=\$PLATFORM_APP_DIR/bin:\$PLATFORM_APP_DIR/vendor/bin:\$PATH \$(symfony var:export)
+if [ "\${SYMFONY_IS_WORKER:-0}" = "1" ]; then
+    export PLATFORM_APP_COMMAND="symfony-start; \${PLATFORM_APP_COMMAND:-}"
+fi
+if [ "\${PLATFORM_ENVIRONMENT_TYPE:-}" = "production" ]; then
+    export APP_RUNTIME_ENV=\${APP_RUNTIME_ENV:-prod}
+fi
+EOS

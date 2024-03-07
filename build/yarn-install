@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+# Licensed to Platform.sh for projects that contributes back to Symfony SAS
+
+node-install
+
+# shellcheck disable=SC2086
+yarn install ${YARN_FLAGS:-}

@@ -1,0 +1,26 @@
+#!/bin/bash
+set -xeuo pipefail
+
+# (c) 2018-2023 Symfony SAS
+# All Rights Reserved
+
+rm -rf var/cache/* app/cache/*
+# copy cache if present
+if [[ -d "tmp/cache/${APP_ENV:-prod}" ]]; then
+    if [[ -z "${SYMFONY_APP_CACHE_DIR:-}" ]]; then
+        if composer show symfony/flex >/dev/null 2>/dev/null; then
+            SYMFONY_APP_CACHE_DIR="var/cache"
+        else
+            SYMFONY_APP_CACHE_DIR="app/cache"
+        fi
+    fi
+
+    mkdir -p "${SYMFONY_APP_CACHE_DIR}"
+    cp -Rp "tmp/cache/${APP_ENV:-prod}" "${SYMFONY_APP_CACHE_DIR}"
+else
+    symfony console cache:clear
+fi
+
+if [[ "${SYMFONY_IS_WORKER:-0}" != "0" ]]; then
+    pkill -USR2 -x symfony 2> /dev/null || true
+fi
