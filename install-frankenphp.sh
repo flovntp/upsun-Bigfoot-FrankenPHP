@@ -52,7 +52,11 @@ download_binary() {
     FRANKENPHP_PROJECT=$1;
     FRANKENPHP_VERSION=$2;
 
+    pwd
     wget https://github.com/dunglas/frankenphp/releases/download/$FRANKENPHP_VERSION/frankenphp-linux-x86_64
+
+    ls -la
+
     mv frankenphp-linux-x86_64 ${FRANKENPHP_PROJECT}
     chmod +x ${FRANKENPHP_PROJECT}
 }
