@@ -65,7 +65,10 @@ applications:
             build: |
                 set -x -e
                 
-                CLOUD_NAME=upsun curl -fs https://get.symfony.com/cloud/configurator | bash
+                cat /run/config.json
+                
+                export CLOUD_NAME=upsun 
+                curl -fs https://get.symfony.com/cloud/configurator | bash
 
                 NODE_VERSION=18 symfony-build
                 
